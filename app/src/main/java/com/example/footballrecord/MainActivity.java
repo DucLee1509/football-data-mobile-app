@@ -21,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -46,6 +47,8 @@ import java.net.URL;
 import android.graphics.Color;
 import android.animation.ObjectAnimator;
 import android.widget.EditText;
+
+import org.json.JSONObject;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -78,6 +81,9 @@ public class MainActivity extends AppCompatActivity {
 
         Button buttonRecord = findViewById(R.id.button_record);
         Button buttonRemove = findViewById(R.id.button_remove);
+        Button buttonSave = findViewById(R.id.button_save);
+
+        EditText keeperTextView = findViewById(R.id.keeper);
         urlTextView = findViewById(R.id.url);
 
         // Request permissions if not granted
@@ -128,6 +134,19 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d(TAG, "on click remove latest");
                 new Thread(() -> removeLatest()).start();
+            }
+        });
+
+        buttonSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.d(TAG, "on click keeper save");
+                String name = keeperTextView.getText().toString().trim();
+                if (!name.isEmpty()) {
+                    new Thread(() -> sendPostRequest(name)).start();
+                } else {
+                    Toast.makeText(MainActivity.this, "Enter a name", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
@@ -291,6 +310,56 @@ public class MainActivity extends AppCompatActivity {
 
         // Upload the file after recording stops
         new Thread(() -> uploadFile(audioFilePath)).start();
+    }
+
+    private void sendPostRequest(String name) {
+        new Thread(() -> {
+            try {
+                String inputUrl = urlTextView.getText().toString().trim();
+                String SERVER_URL = inputUrl.endsWith("/") ? inputUrl + "update" : inputUrl + "/update";
+                Log.d(TAG, "SERVER_URL: " + SERVER_URL);
+
+                URL url = new URL(SERVER_URL);
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoOutput(true);
+                connection.setDoInput(true);
+                connection.setUseCaches(false);
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
+                connection.setRequestProperty("Accept", "application/json"); // Ensure the server expects JSON
+
+                // Create JSON data
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("name", name);
+                jsonObject.put("parameter", "Cứu thua");
+
+                String jsonString = jsonObject.toString();
+                byte[] postData = jsonString.getBytes("UTF-8");
+
+                // Set Content-Length (important)
+                connection.setRequestProperty("Content-Length", String.valueOf(postData.length));
+
+                // Send JSON data
+                try (DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream())) {
+                    outputStream.write(postData);
+                    outputStream.flush();
+                }
+
+                int serverResponseCode = connection.getResponseCode();
+                Log.d(TAG, "POST /update Response Code: " + serverResponseCode);
+
+                if (serverResponseCode == HttpURLConnection.HTTP_OK) {
+                    Log.d(TAG, "Update data sent successfully");
+                } else {
+                    Log.e(TAG, "Update data post failed. Server Response Code: " + serverResponseCode);
+                }
+
+                connection.disconnect();
+
+            } catch (Exception e) {
+                Log.e(TAG, "Update data post failed: " + e.getMessage());
+            }
+        }).start();
     }
 
     private void uploadFile(String filePath) {
