@@ -151,15 +151,15 @@
             android:textStyle="bold"
             android:layout_marginTop="50dp" />
 
-        <EditText
-            android:id="@+id/url"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:ems="10"
-            android:inputType="text"
-            android:text="https://duclee.loophole.site"
-            android:textAlignment="center" />
+<!--        <EditText-->
+<!--            android:id="@+id/url"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginTop="20dp"-->
+<!--            android:ems="10"-->
+<!--            android:inputType="text"-->
+<!--            android:text="https://duclee.loophole.site"-->
+<!--            android:textAlignment="center" />-->
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
