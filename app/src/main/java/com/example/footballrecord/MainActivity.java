@@ -178,9 +178,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void run() {
                 checkServerAlive();
-                handler.postDelayed(this, 500); // Run every 0.5 second
+                handler.postDelayed(this, 250); // Run every 0.25 second
             }
-        }, 500);
+        }, 250);
     }
 
     private void removeLatest() {
